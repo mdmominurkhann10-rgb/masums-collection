@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AmarDokan | আধুনিক অনলাইন শপিং ও সহজ অর্ডার</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Google Fonts: Hind Siliguri (বাংলা) ও Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Hind Siliguri"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+              900: '#064e3b'
+            },
+            accent: {
+              500: '#f59e0b',
+              600: '#d97706',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* কাস্টম স্ক্রলবার */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #print-area, #print-area * {
+        visibility: visible;
+      }
+      #print-area {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 20px;
+        background: white;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased font-sans min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
+
+  <!-- টোস্ট নোটিফিকেশন কন্টেইনার -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- টপ অ্যানাউন্সমেন্ট বার -->
+  <div class="bg-gradient-to-r from-brand-800 via-brand-700 to-emerald-900 text-white text-xs sm:text-sm py-2 px-4 shadow-sm border-b border-brand-600/30">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+      <div class="flex items-center gap-2 font-medium">
+        <span class="bg-amber-400 text-slate-900 px-2 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider animate-pulse">ধামাকা অফার</span>
+        <span id="top-announcement-text">যেকোনো পণ্যে ক্লিক করুন, বিবরণ দেখুন ও ১ মিনিটে সরাসরি অর্ডার করুন!</span>
+      </div>
+      <div class="flex items-center gap-4 text-xs font-semibold text-emerald-100">
+        <span class="hidden md:flex items-center gap-1.5"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-300"></i> সারাদেশে ক্যাশ অন ডেলিভারি</span>
+        <span class="flex items-center gap-1.5"><i data-lucide="clock" class="w-3.5 h-3.5 text-amber-300"></i> ডেলিভারি ২-৩ দিন</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- প্রধান নেভিগেশন হেডার -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 transition-all shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20 gap-4">
+        
+        <!-- ব্র্যান্ড লোগো -->
+        <a href="#" class="flex items-center gap-2.5 flex-shrink-0 group">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-brand-700 to-emerald-500 flex items-center justify-center text-white shadow-md shadow-brand-600/20 group-hover:scale-105 transition-transform">
+            <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div class="flex items-baseline gap-1">
+              <span class="text-2xl font-black bg-gradient-to-r from-brand-800 via-brand-700 to-emerald-600 bg-clip-text text-transparent">AmarDokan</span>
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            </div>
+            <span class="hidden sm:block text-[10px] -mt-1 font-bold tracking-wider text-slate-400 uppercase">অনলাইন সহজ শপিং মার্ট</span>
+          </div>
+        </a>
+
+        <!-- লাইভ সার্চ বার (ডেস্কটপ) -->
+        <div class="hidden md:flex flex-1 max-w-lg mx-6 relative">
+          <input 
+            type="text" 
+            id="search-input" 
+            oninput="handleSearch(this.value)"
+            placeholder="পণ্য, গ্যাজেট বা মডেল লিখে সার্চ করুন..." 
+            class="w-full pl-11 pr-4 py-2.5 bg-slate-100 border border-slate-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 focus:bg-white transition-all shadow-inner"
+          >
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-4 top-3.5"></i>
+        </div>
+
+        <!-- ডানদিকের হটলাইন ও কন্ট্রোল বাটন -->
+        <div class="flex items-center gap-2.5 sm:gap-3.5">
+          <!-- ভাষা পরিবর্তন বাটন -->
+          <button 
+            onclick="toggleLanguage()" 
+            class="px-3 py-1.5 rounded-xl border border-slate-200 hover:border-brand-500 text-xs font-bold flex items-center gap-1.5 transition-colors bg-slate-50 hover:bg-white text-slate-700 shadow-xs"
+            title="Switch Language">
+            <i data-lucide="globe" class="w-3.5 h-3.5 text-brand-600"></i>
+            <span id="lang-label">English</span>
+          </button>
+
+          <!-- সরাসরি হটলাইন কল বাটন -->
+          <a 
+            href="tel:01800123456" 
+            class="flex items-center gap-2 bg-gradient-to-r from-brand-600 to-emerald-600 hover:from-brand-700 hover:to-emerald-700 text-white px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-md shadow-brand-600/20 active:scale-95">
+            <i data-lucide="phone-call" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">০১৮০০-১২৩৪৫৬</span>
+            <span class="sm:hidden">কল করুন</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- মোবাইল সার্চ বার -->
+      <div class="pb-3 md:hidden">
+        <div class="relative w-full">
+          <input 
+            type="text" 
+            id="mobile-search-input" 
+            oninput="handleSearch(this.value)"
+            placeholder="পণ্য বা মডেল সার্চ করুন..." 
+            class="w-full pl-10 pr-4 py-2 bg-slate-100 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white"
+          >
+          <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- মূল কন্টেন্ট বডি -->
+  <main class="flex-grow">
+    
+    <!-- হিরো স্লাইডার ও ব্যানার সেকশন -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+      <div class="relative rounded-3xl overflow-hidden shadow-2xl bg-slate-900 aspect-[16/8] sm:aspect-[21/9] max-h-[420px]">
+        
+        <div id="hero-slider" class="relative w-full h-full">
+          <!-- স্লাইড ১: গ্যাজেট অফার -->
+          <div class="hero-slide absolute inset-0 opacity-100 transition-opacity duration-700 flex items-center">
+            <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=1600&q=80" 
+                 alt="Gadgets Offer" 
+                 class="absolute inset-0 w-full h-full object-cover opacity-35 mix-blend-overlay">
+            <div class="relative z-10 max-w-xl px-6 sm:px-12 text-white">
+              <span class="bg-amber-400 text-slate-900 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block shadow-sm">
+                মেগা গ্যাজেট মেলা
+              </span>
+              <h1 class="text-2xl sm:text-4xl md:text-5xl font-black leading-tight tracking-tight mb-3">
+                সেরা কোয়ালিটি হেডফোন ও গ্যাজেট ৫০% পর্যন্ত ছাড়ে!
+              </h1>
+              <p class="text-xs sm:text-base text-slate-200 mb-6 font-normal line-clamp-2">
+                যেকোনো পণ্যে ট্যাপ করে সরাসরি ক্যাশ অন ডেলিভারিতে অর্ডার কনফার্ম করুন। কোনো কার্ট বা অ্যাকাউন্টের ঝামেলা নেই!
+              </p>
+              <div class="flex items-center gap-3">
+                <a href="#shop-section" class="bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-all shadow-lg hover:shadow-brand-600/30 flex items-center gap-2">
+                  <span>পণ্য দেখুন ও অর্ডার করুন</span>
+                  <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- স্লাইড ২: ফ্যাশন ও লাইফস্টাইল -->
+          <div class="hero-slide absolute inset-0 opacity-0 transition-opacity duration-700 flex items-center">
+            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1600&q=80" 
+                 alt="Fashion Offer" 
+                 class="absolute inset-0 w-full h-full object-cover opacity-35 mix-blend-overlay">
+            <div class="relative z-10 max-w-xl px-6 sm:px-12 text-white">
+              <span class="bg-emerald-400 text-slate-900 text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider mb-3 inline-block shadow-sm">
+                প্রিমিয়াম কালেকশন
+              </span>
+              <h1 class="text-2xl sm:text-4xl md:text-5xl font-black leading-tight tracking-tight mb-3">
+                ট্রেন্ডি লাইফস্টাইল পণ্য ও প্রিমিয়াম এক্সেসরিজ
+              </h1>
+              <p class="text-xs sm:text-base text-slate-200 mb-6 font-normal line-clamp-2">
+                ১০০% খাঁটি পণ্য ও সহজ রিটার্ন পলিসি। পণ্য হাতে পেয়ে মূল্য পরিশোধের নির্ভরযোগ্য সুযোগ।
+              </p>
+              <div class="flex items-center gap-3">
+                <a href="#shop-section" class="bg-white text-slate-900 hover:bg-slate-100 font-bold px-6 py-2.5 rounded-xl text-sm transition-all shadow-lg flex items-center gap-2">
+                  <span>সব পণ্য ব্রাউজ করুন</span>
+                  <i data-lucide="arrow-right" class="w-4 h-4 text-brand-600"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- স্লাইডার কন্ট্রোল বাটন -->
+        <button onclick="changeSlide(-1)" class="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 hover:bg-black/70 text-white z-20 backdrop-blur-sm transition-all">
+          <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        </button>
+        <button onclick="changeSlide(1)" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 hover:bg-black/70 text-white z-20 backdrop-blur-sm transition-all">
+          <i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- ক্যাটাগরি পিলস সেকশন -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="layout-grid" class="w-5 h-5 text-brand-600"></i>
+          <span id="cat-header-title">জনপ্রিয় ক্যাটাগরি</span>
+        </h2>
+        <span class="text-xs text-slate-500 font-medium hidden sm:block">পছন্দের ক্যাটাগরি ফিল্টার করতে ক্লিক করুন</span>
+      </div>
+
+      <div class="flex items-center gap-2.5 overflow-x-auto pb-2 scrollbar-none" id="category-pills">
+        <!-- ডায়নামিকভাবে রেন্ডার হবে -->
+      </div>
+    </section>
+
+    <!-- মূল শপ সেকশন: প্রোডাক্ট গ্রিড ও ফিল্টার -->
+    <section id="shop-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      
+      <!-- টুলবার / সর্টিং ও ফিল্টারিং বার -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+        <div class="flex items-center gap-2 text-sm text-slate-600">
+          <span>প্রদর্শিত হচ্ছে:</span>
+          <span id="product-count-badge" class="font-bold text-brand-700 bg-brand-50 px-2.5 py-0.5 rounded-lg border border-brand-200">০ টি পণ্য</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          <!-- সর্বোচ্চ দাম ফিল্টার -->
+          <div class="flex items-center gap-2 text-xs font-semibold text-slate-600 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+            <span>সর্বোচ্চ দাম:</span>
+            <span id="price-val-label" class="font-bold text-brand-600">৳১৫,০০০</span>
+            <input 
+              type="range" 
+              id="price-range" 
+              min="500" 
+              max="15000" 
+              step="500" 
+              value="15000" 
+              oninput="handlePriceFilter(this.value)"
+              class="w-24 sm:w-28 accent-brand-600 cursor-pointer"
+            >
+          </div>
+
+          <!-- সর্ট ড্রপডাউন -->
+          <div class="flex items-center gap-2 text-sm">
+            <label for="sort-select" class="text-xs text-slate-500 font-medium whitespace-nowrap">সর্ট করুন:</label>
+            <select 
+              id="sort-select" 
+              onchange="handleSort(this.value)" 
+              class="bg-slate-50 border border-slate-200 text-xs sm:text-sm rounded-xl py-1.5 px-3 font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500">
+              <option value="featured">ফিচার্ড / জনপ্রিয়</option>
+              <option value="low-to-high">মূল্য: কম থেকে বেশি</option>
+              <option value="high-to-low">মূল্য: বেশি থেকে কম</option>
+              <option value="rating">সেরা রেটিং</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- প্রোডাক্ট গ্রিড (এখানে ক্লিক করলেই সরাসরি মডাল ওপেন হবে) -->
+      <div id="product-grid" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <!-- ডায়নামিকভাবে রেন্ডার হবে -->
+      </div>
+
+      <!-- এম্পটি স্টেট (যদি কোনো পণ্য না পাওয়া যায়) -->
+      <div id="empty-state" class="hidden text-center py-16 bg-white rounded-3xl border border-dashed border-slate-300">
+        <i data-lucide="package-search" class="w-16 h-16 text-slate-300 mx-auto mb-3"></i>
+        <h3 class="text-lg font-bold text-slate-700 mb-1">কোনো পণ্য পাওয়া যায়নি!</h3>
+        <p class="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto mb-4">অনুগ্রহ করে ভিন্ন কোনো নাম বা ক্যাটাগরি দিয়ে চেষ্টা করুন।</p>
+        <button onclick="resetFilters()" class="text-xs font-bold px-4 py-2 bg-brand-50 text-brand-700 border border-brand-200 rounded-xl hover:bg-brand-100 transition-colors">
+          ফিল্টার রিসেট করুন
+        </button>
+      </div>
+    </section>
+
+    <!-- ট্রাস্ট ব্যাজ সেকশন -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/90 flex items-center gap-3 shadow-xs">
+          <div class="p-2.5 rounded-xl bg-emerald-50 text-brand-600 shrink-0">
+            <i data-lucide="truck" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-xs sm:text-sm text-slate-900">দ্রুত ডেলিভারি</h4>
+            <p class="text-[11px] text-slate-500">সমগ্র বাংলাদেশে ২-৩ দিনে</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/90 flex items-center gap-3 shadow-xs">
+          <div class="p-2.5 rounded-xl bg-blue-50 text-blue-600 shrink-0">
+            <i data-lucide="shield-check" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-xs sm:text-sm text-slate-900">১০০% আসল পণ্য</h4>
+            <p class="text-[11px] text-slate-500">অথেন্টিক ব্র্যান্ড গ্যারান্টি</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/90 flex items-center gap-3 shadow-xs">
+          <div class="p-2.5 rounded-xl bg-amber-50 text-amber-600 shrink-0">
+            <i data-lucide="rotate-ccw" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-xs sm:text-sm text-slate-900">সহজ রিটার্ন</h4>
+            <p class="text-[11px] text-slate-500">৭ দিনের নিরাপদ রিটার্ন নীতি</p>
+          </div>
+        </div>
+
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/90 flex items-center gap-3 shadow-xs">
+          <div class="p-2.5 rounded-xl bg-purple-50 text-purple-600 shrink-0">
+            <i data-lucide="headphones" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-xs sm:text-sm text-slate-900">২৪/৭ কাস্টমার সাপোর্ট</h4>
+            <p class="text-[11px] text-slate-500">ফোন ও মেসেঞ্জারে সহায়তা</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- গ্রাহকদের রিভিউ সেকশন -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mb-6">
+      <div class="text-center max-w-xl mx-auto mb-8">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2">গ্রাহকদের বিশ্বস্ত মতামত</h2>
+        <p class="text-xs sm:text-sm text-slate-500">হাজারো সন্তুষ্ট গ্রাহক আমাদের পণ্যের নির্ভরযোগ্যতার আসল প্রমাণ</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex text-amber-400 mb-3">
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-600 mb-4 italic">"প্রোডাক্টে ক্লিক করে এত সহজে অর্ডার করা যায় অন্য কোথাও দেখিনি! ২ দিনের মধ্যে ঢাকার বাইরে হোম ডেলিভারি পেয়েছি। সাউন্ড কোয়ালিটি দারুণ!"</p>
+          </div>
+          <div class="flex items-center gap-3 pt-3 border-t border-slate-100">
+            <div class="w-9 h-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-bold text-sm">রা</div>
+            <div>
+              <h5 class="text-xs font-bold text-slate-800">রাকিবুল হাসান</h5>
+              <span class="text-[11px] text-slate-400">উত্তরা, ঢাকা</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex text-amber-400 mb-3">
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-600 mb-4 italic">"ক্যাশ অন ডেলিভারিতে চেক করে টাকা দিতে পেরেছি। ওয়াচটি একদম ছবির মতোই নিখুঁত। প্যাকেজিং এবং সার্ভিস চমৎকার।"</p>
+          </div>
+          <div class="flex items-center gap-3 pt-3 border-t border-slate-100">
+            <div class="w-9 h-9 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center font-bold text-sm">সা</div>
+            <div>
+              <h5 class="text-xs font-bold text-slate-800">সাদিয়া রহমান</h5>
+              <span class="text-[11px] text-slate-400">ধানমন্ডি, ঢাকা</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex text-amber-400 mb-3">
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+              <i data-lucide="star" class="w-4 h-4 fill-current"></i>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-600 mb-4 italic">"অর্ডার কনফার্ম করার ১০ মিনিটের মধ্যে প্রতিনিধি ফোন দিয়ে নিশ্চিত করেছিল। লেদার ওয়ালেটের ফিনিশিং ১০০% জেনুইন।"</p>
+          </div>
+          <div class="flex items-center gap-3 pt-3 border-t border-slate-100">
+            <div class="w-9 h-9 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-sm">তা</div>
+            <div>
+              <h5 class="text-xs font-bold text-slate-800">তানভীর মাহমুদ</h5>
+              <span class="text-[11px] text-slate-400">চট্টগ্রাম</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ফুটার সেকশন -->
+  <footer class="bg-slate-900 text-slate-300 pt-12 pb-8 border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+        
+        <!-- কোম্পানি পরিচিতি -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <div class="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center text-white">
+              <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+            </div>
+            <span class="text-xl font-black text-white">AmarDokan</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            আমার দোকান বাংলাদেশের অন্যতম দ্রুত বর্ধনশীল ই-কমার্স প্ল্যাটফর্ম। গুণগত মানসম্পন্ন আসল পণ্য সাশ্রয়ী মূল্যে ঘরে পৌঁছে দিতে আমরা প্রতিশ্রুতিবদ্ধ।
+          </p>
+          <div class="flex items-center gap-3 pt-2 text-slate-400">
+            <span class="w-8 h-8 rounded-full bg-slate-800 hover:bg-brand-600 hover:text-white flex items-center justify-center transition-colors cursor-pointer"><i data-lucide="facebook" class="w-4 h-4"></i></span>
+            <span class="w-8 h-8 rounded-full bg-slate-800 hover:bg-brand-600 hover:text-white flex items-center justify-center transition-colors cursor-pointer"><i data-lucide="instagram" class="w-4 h-4"></i></span>
+            <span class="w-8 h-8 rounded-full bg-slate-800 hover:bg-brand-600 hover:text-white flex items-center justify-center transition-colors cursor-pointer"><i data-lucide="phone" class="w-4 h-4"></i></span>
+          </div>
+        </div>
+
+        <!-- দরকারি লিংক -->
+        <div>
+          <h4 class="text-white text-sm font-bold mb-3 uppercase tracking-wider">জরুরি লিংক</h4>
+          <ul class="space-y-2 text-xs">
+            <li><a href="#" class="hover:text-white transition-colors">আমাদের সম্পর্কে</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">গোপনীয়তা নীতি</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">শর্তাবলী ও নিয়মাবলী</a></li>
+            <li><a href="#" class="hover:text-white transition-colors">রিটার্ন ও রিফান্ড পলিসি</a></li>
+          </ul>
+        </div>
+
+        <!-- টপ ক্যাটাগরি -->
+        <div>
+          <h4 class="text-white text-sm font-bold mb-3 uppercase tracking-wider">টপ ক্যাটাগরি</h4>
+          <ul class="space-y-2 text-xs">
+            <li><a href="javascript:selectCategory('electronics')" class="hover:text-white transition-colors">ইলেকট্রনিক্স</a></li>
+            <li><a href="javascript:selectCategory('gadgets')" class="hover:text-white transition-colors">গ্যাজেটস ও অ্যাকসেসরিজ</a></li>
+            <li><a href="javascript:selectCategory('fashion')" class="hover:text-white transition-colors">ফ্যাশন ও ক্লথিং</a></li>
+            <li><a href="javascript:selectCategory('home')" class="hover:text-white transition-colors">হোম ও লাইফস্টাইল</a></li>
+          </ul>
+        </div>
+
+        <!-- যোগাযোগ ও পেমেন্ট অপশন -->
+        <div class="space-y-3">
+          <h4 class="text-white text-sm font-bold mb-2 uppercase tracking-wider">যোগাযোগ</h4>
+          <p class="text-xs text-slate-400 flex items-center gap-2">
+            <i data-lucide="phone" class="w-3.5 h-3.5 text-brand-500"></i> +৮৮০ ১৮০০-১২৩৪৫৬
+          </p>
+          <p class="text-xs text-slate-400 flex items-center gap-2">
+            <i data-lucide="mail" class="w-3.5 h-3.5 text-brand-500"></i> support@amardokan.com.bd
+          </p>
+          <p class="text-xs text-slate-400 flex items-center gap-2">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-brand-500"></i> ধানমন্ডি ২৭, ঢাকা-১২০৯
+          </p>
+
+          <div class="pt-2">
+            <span class="text-[11px] text-slate-400 block mb-1.5">নিরাপদ পেমেন্ট মেথড:</span>
+            <div class="flex items-center gap-2">
+              <span class="bg-pink-900/60 text-pink-300 border border-pink-700/50 text-[10px] font-bold px-2 py-0.5 rounded">bKash</span>
+              <span class="bg-orange-900/60 text-orange-300 border border-orange-700/50 text-[10px] font-bold px-2 py-0.5 rounded">Nagad</span>
+              <span class="bg-emerald-900/60 text-emerald-300 border border-emerald-700/50 text-[10px] font-bold px-2 py-0.5 rounded">Cash on Delivery</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="pt-6 border-t border-slate-800 text-center text-xs text-slate-500">
+        <p>&copy; ২০২৬ AmarDokan e-Commerce. সর্বস্বত্ব সংরক্ষিত।</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- প্রিমিয়াম মডাল: পণ্যের পূর্ণাঙ্গ বিবরণ ও ঠিক নিচেই সরাসরি অর্ডার ফরম -->
+  <!-- ========================================================================= -->
+  <div id="product-order-modal" class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 hidden opacity-0 transition-opacity duration-200">
+    
+    <div id="modal-card" class="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl relative transform scale-95 transition-transform duration-200 border border-slate-200">
+      
+      <!-- ক্লোজ বাটন -->
+      <button onclick="closeProductModal()" class="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors shadow-xs">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <!-- ১. মূল ফর্ম ও বিবরণ ভিউ -->
+      <div id="modal-content-form" class="p-5 sm:p-7">
+        
+        <!-- পণ্যের শীর্ষ অংশ: ইমেজ + প্রাথমিক ডিটেইলস -->
+        <div class="flex flex-col sm:flex-row gap-5 pb-5 border-b border-slate-200">
+          <!-- ছবি -->
+          <div class="w-full sm:w-52 h-56 sm:h-52 bg-slate-100 rounded-2xl overflow-hidden shrink-0 border border-slate-200 relative group">
+            <img id="m-img" src="" alt="পণ্যের ছবি" class="w-full h-full object-cover">
+            <span id="m-discount-tag" class="absolute top-2.5 left-2.5 bg-rose-600 text-white font-extrabold text-xs px-2.5 py-0.5 rounded-full shadow-sm"></span>
+          </div>
+
+          <!-- তথ্য -->
+          <div class="flex-1 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center gap-2 mb-1.5">
+                <span id="m-category-badge" class="text-xs font-bold text-brand-700 bg-brand-50 px-2.5 py-0.5 rounded-full border border-brand-200"></span>
+                <span class="text-xs text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <i data-lucide="check" class="w-3 h-3"></i> ইন-স্টক
+                </span>
+              </div>
+
+              <h3 id="m-title" class="text-lg sm:text-xl font-black text-slate-900 leading-snug mb-2"></h3>
+              
+              <!-- স্টার রেটিং -->
+              <div class="flex items-center gap-1.5 text-xs text-amber-500 mb-3">
+                <div class="flex" id="m-stars"></div>
+                <span id="m-rating-text" class="font-bold text-slate-700"></span>
+              </div>
+
+              <!-- দাম -->
+              <div class="flex items-baseline gap-2 mb-3">
+                <span id="m-price" class="text-2xl sm:text-3xl font-black text-brand-700"></span>
+                <span id="m-old-price" class="text-sm text-slate-400 line-through"></span>
+              </div>
+            </div>
+
+            <!-- পরিমাণ বাড়ানো/কমানোর কাউন্টার -->
+            <div class="flex items-center gap-3 pt-2">
+              <span class="text-xs font-bold text-slate-700">পরিমাণ (Quantity):</span>
+              <div class="flex items-center border border-slate-300 rounded-xl bg-slate-50 overflow-hidden shadow-inner">
+                <button type="button" onclick="changeQty(-1)" class="w-8 h-8 flex items-center justify-center hover:bg-slate-200 text-slate-700 font-bold transition-colors">-</button>
+                <span id="m-qty-val" class="w-10 text-center font-black text-slate-900 text-sm">১</span>
+                <button type="button" onclick="changeQty(1)" class="w-8 h-8 flex items-center justify-center hover:bg-slate-200 text-slate-700 font-bold transition-colors">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- পণ্যের পূর্ণাঙ্গ বিবরণ বক্স -->
+        <div class="my-5 bg-slate-50 border border-slate-200/90 rounded-2xl p-4 sm:p-5">
+          <h4 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <i data-lucide="file-text" class="w-4 h-4 text-brand-600"></i>
+            <span>পণ্যের বিস্তারিত বিবরণ ও স্পেসিফিকেশন:</span>
+          </h4>
+          <p id="m-description" class="text-xs sm:text-sm text-slate-700 leading-relaxed font-normal mb-3"></p>
+          
+          <!-- বুলেট পয়েন্ট ফিচার -->
+          <ul id="m-feature-bullets" class="text-xs text-slate-600 space-y-1.5 pl-1">
+            <!-- জাভাস্ক্রিপ্ট দিয়ে বসবে -->
+          </ul>
+        </div>
+
+        <!-- সরাসরি অর্ডার ফরম (বিবরণের ঠিক নিচেই) -->
+        <div class="bg-gradient-to-b from-brand-50/50 to-white border-2 border-dashed border-brand-500 rounded-2xl p-4 sm:p-6 shadow-sm">
+          <div class="flex items-center gap-2 mb-4 pb-2 border-b border-brand-200/60">
+            <div class="p-1.5 rounded-lg bg-brand-600 text-white">
+              <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h4 class="font-black text-base sm:text-lg text-brand-900">অর্ডার করতে আপনার তথ্য দিন</h4>
+              <p class="text-xs text-slate-500">কোনো রেজিস্ট্রেশন লাগবে না, সরাসরি তথ্য দিয়ে অর্ডার কনফার্ম করুন</p>
+            </div>
+          </div>
+
+          <form id="direct-order-form" onsubmit="processDirectOrder(event)" class="space-y-4">
+            
+            <!-- ক্রেতার সম্পূর্ণ নাম -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">আপনার নাম *</label>
+              <input 
+                type="text" 
+                id="c-name" 
+                required 
+                placeholder="যেমন: মোঃ সাকিব হাসান" 
+                class="w-full text-sm px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all shadow-inner"
+              >
+            </div>
+
+            <!-- মোবাইল নম্বর -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">মোবাইল নম্বর (১১ ডিজিট) *</label>
+              <input 
+                type="tel" 
+                id="c-phone" 
+                required 
+                placeholder="017XXXXXXXX" 
+                pattern="^(?:\+88|88)?(01[3-9]\d{8})$" 
+                title="অনুগ্রহ করে সঠিক ১১ ডিজিটের মোবাইল নম্বর দিন" 
+                class="w-full text-sm px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all shadow-inner"
+              >
+            </div>
+
+            <!-- সম্পূর্ণ ডেলিভারি ঠিকানা -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">সম্পূর্ণ ডেলিভারি ঠিকানা *</label>
+              <textarea 
+                id="c-address" 
+                required 
+                rows="2" 
+                placeholder="বাড়ি নং, রোড নং, এলাকা, থানা ও জেলার নাম লিখুন..." 
+                class="w-full text-sm px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all shadow-inner"
+              ></textarea>
+            </div>
+
+            <!-- ডেলিভারি জোন নির্বাচন -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5">ডেলিভারি এরিয়া নির্বাচন করুন *</label>
+              <div class="grid grid-cols-2 gap-2.5">
+                <label class="border-2 border-slate-200 rounded-xl p-3 flex items-center gap-2 cursor-pointer has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50 transition-all">
+                  <input type="radio" name="deliveryZone" value="60" checked onchange="calculateOrderTotal()" class="accent-brand-600">
+                  <div class="text-xs">
+                    <span class="font-bold text-slate-800 block">ঢাকার ভিতরে</span>
+                    <span class="text-brand-700 font-extrabold">৳৬০</span>
+                  </div>
+                </label>
+
+                <label class="border-2 border-slate-200 rounded-xl p-3 flex items-center gap-2 cursor-pointer has-[:checked]:border-brand-600 has-[:checked]:bg-brand-50 transition-all">
+                  <input type="radio" name="deliveryZone" value="120" onchange="calculateOrderTotal()" class="accent-brand-600">
+                  <div class="text-xs">
+                    <span class="font-bold text-slate-800 block">ঢাকার বাইরে</span>
+                    <span class="text-brand-700 font-extrabold">৳১২০</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- পেমেন্ট পদ্ধতি -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5">পেমেন্ট মেথড বেছে নিন</label>
+              <div class="grid grid-cols-3 gap-2">
+                <label class="border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:border-emerald-500 has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50 transition-all">
+                  <input type="radio" name="cPayment" value="ক্যাশ অন ডেলিভারি" checked class="accent-emerald-600">
+                  <span class="text-xs font-bold text-emerald-800 mt-1">ক্যাশ অন ডেলিভারি</span>
+                  <span class="text-[10px] text-slate-400">হাতে পেয়ে টাকা</span>
+                </label>
+
+                <label class="border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:border-pink-500 has-[:checked]:border-pink-600 has-[:checked]:bg-pink-50 transition-all">
+                  <input type="radio" name="cPayment" value="bKash (বিকাশ)" class="accent-pink-600">
+                  <span class="text-xs font-bold text-pink-600 mt-1">bKash</span>
+                  <span class="text-[10px] text-slate-400">বিকাশ পেমেন্ট</span>
+                </label>
+
+                <label class="border border-slate-200 rounded-xl p-2 flex flex-col items-center justify-center text-center cursor-pointer hover:border-orange-500 has-[:checked]:border-orange-600 has-[:checked]:bg-orange-50 transition-all">
+                  <input type="radio" name="cPayment" value="Nagad (নগদ)" class="accent-orange-600">
+                  <span class="text-xs font-bold text-orange-600 mt-1">Nagad</span>
+                  <span class="text-[10px] text-slate-400">নগদ পেমেন্ট</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- কোনো স্পেশাল নোট (ঐচ্ছিক) -->
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">অর্ডার নোট / সাইজ বা কালার পছন্দ (ঐচ্ছিক)</label>
+              <input 
+                type="text" 
+                id="c-notes" 
+                placeholder="যেমন: কালো কালার দিবেন বা নির্দিষ্ট কোনো সাইজ থাকলে লিখুন..." 
+                class="w-full text-xs px-3.5 py-2 bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-500"
+              >
+            </div>
+
+            <!-- লাইভ হিসাব ও সামারি বক্স -->
+            <div class="bg-white border border-brand-200 rounded-2xl p-4 text-xs space-y-2 shadow-xs">
+              <div class="flex justify-between text-slate-600">
+                <span>পণ্যের মূল্য:</span>
+                <span id="sum-unit-price" class="font-semibold text-slate-900">৳০</span>
+              </div>
+              <div class="flex justify-between text-slate-600">
+                <span>পরিমাণ:</span>
+                <span id="sum-qty" class="font-semibold text-slate-900">১ টি</span>
+              </div>
+              <div class="flex justify-between text-slate-600">
+                <span>ডেলিভারি চার্জ:</span>
+                <span id="sum-delivery" class="font-semibold text-slate-900">৳৬০</span>
+              </div>
+              <div class="flex justify-between text-base font-black text-brand-800 pt-2 border-t border-slate-100">
+                <span>সর্বমোট প্রদেয় টাকা:</span>
+                <span id="sum-total-amount" class="text-brand-700 text-lg">৳০</span>
+              </div>
+            </div>
+
+            <!-- কনফার্ম অ্যাকশন বাটন -->
+            <button 
+              type="submit" 
+              class="w-full bg-gradient-to-r from-brand-600 to-emerald-600 hover:from-brand-700 hover:to-emerald-700 text-white font-black py-4 px-6 rounded-2xl text-base shadow-xl shadow-brand-600/30 active:scale-[0.99] transition-all flex items-center justify-center gap-2 cursor-pointer">
+              <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+              <span>অর্ডার কনফার্ম করুন (ক্যাশ অন ডেলিভারি)</span>
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- ২. সফল অর্ডারের মেমো ও ইনভয়েস স্ক্রিন -->
+      <div id="modal-content-success" class="p-6 sm:p-8 text-center hidden">
+        
+        <div id="print-area">
+          <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-3 animate-bounce">
+            <i data-lucide="check" class="w-8 h-8"></i>
+          </div>
+
+          <h3 class="text-xl sm:text-2xl font-black text-slate-900 mb-1">আলহামদুলিল্লাহ! আপনার অর্ডার সফল হয়েছে</h3>
+          <p class="text-xs sm:text-sm text-slate-500 mb-6">আপনার অর্ডারটি সিস্টেমে গ্রহণ করা হয়েছে। খুব শীঘ্রই আমাদের প্রতিনিধি কল দিয়ে কনফার্ম করবেন।</p>
+
+          <!-- মেমো কার্ড -->
+          <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-left text-xs sm:text-sm space-y-2.5 mb-6 shadow-inner">
+            <div class="flex justify-between border-b border-slate-200 pb-2">
+              <span class="text-slate-500 font-semibold">অর্ডার আইডি:</span>
+              <span id="inv-order-id" class="font-mono font-bold text-brand-700"></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500 font-semibold">অর্ডারের তারিখ:</span>
+              <span id="inv-date" class="font-medium text-slate-700"></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500 font-semibold">পণ্যের নাম:</span>
+              <span id="inv-prod-title" class="font-bold text-slate-800 text-right max-w-[200px] truncate"></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500 font-semibold">পরিমাণ:</span>
+              <span id="inv-prod-qty" class="font-bold text-slate-800"></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500 font-semibold">গ্রাহকের নাম:</span>
+              <span id="inv-cust-name" class="font-semibold text-slate-800"></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500 font-semibold">মোবাইল নম্বর:</span>
+              <span id="inv-cust-phone" class="font-semibold text-slate-800"></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500 font-semibold">ডেলিভারি ঠিকানা:</span>
+              <span id="inv-cust-address" class="font-medium text-slate-700 text-right max-w-[220px]"></span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500 font-semibold">পেমেন্ট মেথড:</span>
+              <span id="inv-cust-payment" class="font-bold text-emerald-700"></span>
+            </div>
+            <div class="flex justify-between text-base font-black text-slate-900 pt-2 border-t border-slate-200">
+              <span>মোট প্রদেয় টাকা:</span>
+              <span id="inv-total-price" class="text-brand-700 text-lg"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- অ্যাকশন বাটনসমূহ -->
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button 
+            type="button" 
+            onclick="window.print()" 
+            class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl text-xs sm:text-sm transition-colors flex items-center justify-center gap-2">
+            <i data-lucide="printer" class="w-4 h-4"></i>
+            <span>রসিদ প্রিন্ট করুন</span>
+          </button>
+          
+          <button 
+            type="button" 
+            onclick="closeProductModal()" 
+            class="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 rounded-xl text-xs sm:text-sm transition-colors shadow-md shadow-brand-600/20">
+            নতুন পণ্য দেখুন
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- জাভাস্ক্রিপ্ট অ্যাপ্লিকেশন লজিক -->
+  <!-- ========================================================================= -->
+  <script>
+    // অ্যাপ স্টেট
+    let currentLang = 'bn'; // 'bn' | 'en'
+    let currentCategory = 'all';
+    let searchQuery = '';
+    let maxPrice = 15000;
+    let sortBy = 'featured';
+    let currentSlide = 0;
+    let sliderTimer = null;
+
+    let selectedProduct = null;
+    let orderQuantity = 1;
+
+    // সমৃদ্ধ পণ্য তালিকা (8টি ভ্যারিড আইটেম)
+    const productCatalog = [
+      {
+        id: 1,
+        title_bn: "ওয়্যারলেস অ্যাক্টিভ নয়েজ ক্যানসেলিং হেডফোন",
+        title_en: "Wireless ANC Over-Ear Headphones Pro",
+        category: "electronics",
+        price: 3490,
+        oldPrice: 4990,
+        discount: "৩০% ছাড়",
+        rating: 4.8,
+        reviewsCount: 142,
+        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=700&q=80",
+        description_bn: "শক্তিশালী ডিপ বেস, ৪০ ঘণ্টা লং ব্যাটারি ব্যাকআপ ও স্মার্ট অ্যাক্টিভ নয়েজ ক্যান্সেলেশন প্রযুক্তি। কানের জন্য সম্পূর্ণ নরম মেমোরি ফোম কুশন যা ঘণ্টার পর ঘণ্টা ব্যবহারে অত্যন্ত আরামদায়ক।",
+        description_en: "Powerful deep bass, 40-hour long battery life, and advanced active noise cancellation.",
+        features_bn: [
+          "✓ ৪০ ঘণ্টার বিশাল ব্যাটারি ব্যাকআপ",
+          "✓ আল্ট্রা-সফট মেমোরি ফোম প্যাডিং",
+          "✓ ডুয়াল মাইক্রোফোন ও ক্লিয়ার এইচডি কলিং",
+          "✓ ৬ মাসের অফিশিয়াল রিপ্লেসমেন্ট ওয়ারেন্টি"
+        ]
+      },
+      {
+        id: 2,
+        title_bn: "স্মার্ট ওয়াটারপ্রুফ ফিটনেস ঘড়ি (AMOLED)",
+        title_en: "Smart Fitness Watch AMOLED IP68",
+        category: "gadgets",
+        price: 2650,
+        oldPrice: 3500,
+        discount: "২৪% ছাড়",
+        rating: 4.7,
+        reviewsCount: 98,
+        image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=700&q=80",
+        description_bn: "রিয়েলটাইম হার্টরেট মনিটর, SpO2 রক্তে অক্সিজেনের মাত্রা ট্র্যাকিং, ব্লুটুথ কলিং ও ফুল টাচ উজ্জ্বল অ্যামোলেড ডিসপ্লে। যেকোনো পোশাকে স্টাইলিশ ও আধুনিক লুক দেবে।",
+        description_en: "Vivid AMOLED screen, real-time health monitors, calling support and IP68 waterproof body.",
+        features_bn: [
+          "✓ ১.৮৫ ইঞ্চি হাই-রেজ্যুলেশন অ্যামোলেড ডিসপ্লে",
+          "✓ এক চার্জে একটানা ৭ দিন ব্যাটারি লাইফ",
+          "✓ ১০০+ স্পোর্টস ও ফিটনেস মোড",
+          "✓ ১০০% ওয়াটারপ্রুফ মেটাল বডি"
+        ]
+      },
+      {
+        id: 3,
+        title_bn: "পুরুষদের প্রিমিয়াম আসল লেদার ওয়ালেট",
+        title_en: "Men's Vintage Genuine Leather Wallet",
+        category: "fashion",
+        price: 890,
+        oldPrice: 1450,
+        discount: "৩৯% ছাড়",
+        rating: 4.9,
+        reviewsCount: 165,
+        image: "https://images.unsplash.com/photo-1627123424574-724758594e93?auto=format&fit=crop&w=700&q=80",
+        description_bn: "১০০% খাঁটি দেশীয় ফিনিশড চামড়ার তৈরি ক্লাসিক মানিব্যাগ। টাকা রাখা ছাড়াও ৮টি কার্ড স্লট, কয়েন পকেট এবং ড্রাইভিং লাইসেন্স ফ্রেম রয়েছে। সহজে পকেটে বহনযোগ্য এবং অত্যন্ত টেকসই।",
+        description_en: "100% genuine handcrafted cowhide leather with 8 card slots and currency compartments.",
+        features_bn: [
+          "✓ ১০০% গ্যারান্টিযুক্ত আসল চামড়া",
+          "✓ ৮টি কার্ড স্লট ও ১টি আইডি উইন্ডো",
+          "✓ আরএফআইডি (RFID) ব্লকিং সিকিউরিটি",
+          "✓ টেকসই সেলাই ও দীর্ঘস্থায়ী ফিনিশিং"
+        ]
+      },
+      {
+        id: 4,
+        title_bn: "আল্ট্রা-সফট ক্যাজুয়াল পুরুষদের স্নিকার্স",
+        title_en: "Men's Urban Street Running Sneakers",
+        category: "fashion",
+        price: 1850,
+        oldPrice: 2600,
+        discount: "২৯% ছাড়",
+        rating: 4.6,
+        reviewsCount: 74,
+        image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=80",
+        description_bn: "প্রতিদিনের অফিস, জগিং বা ক্যাজুয়াল আড্ডার জন্য অত্যন্ত নমনীয়, হালকা ও আরামদায়ক জুতো। নরম কুশন সোলের কারণে ঘণ্টার পর ঘণ্টা হাঁটাচলা করলেও পায়ে কোনো ব্যথা অনুভূত হয় না।",
+        description_en: "Ultra-comfortable, lightweight breathable cushioned mesh sneakers for everyday wear.",
+        features_bn: [
+          "✓ শ্বাসপ্রশ্বাসযোগ্য ব্রিদেবল কটন মেশ ফেব্রিক",
+          "✓ অ্যান্টি-স্লিপ গ্রিপ রাবার সোল",
+          "✓ নরম ইনসোল মেমোরি কুশনিং",
+          "✓ স্মার্ট ও ট্রেন্ডি কালার ডিজাইন"
+        ]
+      },
+      {
+        id: 5,
+        title_bn: "পোর্টেবল ওয়াটারপ্রুফ ব্লুটুথ স্পিকার",
+        title_en: "Rugged Portable Bluetooth Speaker 10W",
+        category: "gadgets",
+        price: 1250,
+        oldPrice: 1750,
+        discount: "২৮% ছাড়",
+        rating: 4.5,
+        reviewsCount: 62,
+        image: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=700&q=80",
+        description_bn: "৩৬০ ডিগ্রি ক্রিস্টাল ক্লিয়ার সাউন্ড, পাঞ্চি ডিপ বাস এবং ১২ ঘণ্টার বিশাল প্লে-টাইম। ক্যাম্পিং, পার্টি বা ঘরের ব্যবহারের জন্য সেরা ও পানিরোধক পোর্টেবল স্পিকার।",
+        description_en: "360-degree punchy audio with 12 hours playtime and splash resistance.",
+        features_bn: [
+          "✓ ১০ ওয়াট স্ট্রং স্টেরিও আউটপুট",
+          "✓ আইপিএক্স৫ ওয়াটার ও ডাস্ট রেজিস্ট্যান্ট",
+          "✓ ব্লুটুথ ৫.৩ স্টেবল কানেকশন",
+          "✓ মেমোরি কার্ড ও অক্স কেবল সাপোর্ট"
+        ]
+      },
+      {
+        id: 6,
+        title_bn: "আল্ট্রা-এইচডি ৪কে অ্যাকশন স্পোর্টস ক্যামেরা",
+        title_en: "4K Ultra HD Sports Action Camera",
+        category: "electronics",
+        price: 6890,
+        oldPrice: 8990,
+        discount: "২৩% ছাড়",
+        rating: 4.7,
+        reviewsCount: 51,
+        image: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=700&q=80",
+        description_bn: "ওয়াইড অ্যাঙ্গেল ১৭০ ডিগ্রি লেন্স, ওয়াটারপ্রুফ কেসিংসহ সমুদ্রের ৩০ মিটার গভীরে শুটিং করার সুবিধা। ভ্রমণ ও বাইক রাইডারদের ভিডিও ভ্লগিংয়ের জন্য সেরা ক্যামেরা প্যাকেজ।",
+        description_en: "170-degree wide angle 4K video recording with waterproof dive housing included.",
+        features_bn: [
+          "✓ ৪কে ৬০এফপিএস স্মুথ আল্ট্রা এইচডি ভিডিও",
+          "✓ ৩০ মিটার ওয়াটারপ্রুফ প্রটেকশন কেস",
+          "✓ ওয়াইফাই ও মোবাইল অ্যাপ কানেক্টিভিটি",
+          "✓ হেলমেট ও বাইক মাউন্ট কিট সাথে ফ্রি"
+        ]
+      },
+      {
+        id: 7,
+        title_bn: "স্মার্ট রিচার্জেবল পোর্টেবল ব্লেন্ডার",
+        title_en: "Rechargeable USB Fruit Juicer Blender",
+        category: "home",
+        price: 1350,
+        oldPrice: 1950,
+        discount: "৩১% ছাড়",
+        rating: 4.4,
+        reviewsCount: 43,
+        image: "https://images.unsplash.com/photo-1570222094114-d054a817e56b?auto=format&fit=crop&w=700&q=80",
+        description_bn: "ইউএসবি রিচার্জেবল পোর্টেবল ব্লেন্ডার ও জুসার। অফিস, জিম বা ভ্রমণের সময় মাত্র ৩০ সেকেন্ডে ঘরে তৈরি ফ্রেশ জুস বা স্মুদি বানাতে পারবেন। নিরাপদ ফুড গ্রেড উপাদান দিয়ে তৈরি।",
+        description_en: "Cordless portable mini blender for healthy shakes, juices, and baby food.",
+        features_bn: [
+          "✓ ৬টি ধারালো স্টেইনলেস স্টিল ব্লেড",
+          "✓ ২০০০ মিলিঅ্যাম্পিয়ার রিচার্জেবল ব্যাটারি",
+          "✓ সহজে পরিষ্কারযোগ্য ও নিরাপদ মেটেরিয়াল",
+          "✓ মোবাইল পাওয়ারব্যাংক দিয়েও চার্জ হয়"
+        ]
+      },
+      {
+        id: 8,
+        title_bn: "স্মার্ট অ্যারোমা হিউমিডিফায়ার ও নাইট ল্যাম্প",
+        title_en: "Aroma Essential Oil Diffuser Lamp",
+        category: "home",
+        price: 1550,
+        oldPrice: 2200,
+        discount: "৩০% ছাড়",
+        rating: 4.6,
+        reviewsCount: 39,
+        image: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?auto=format&fit=crop&w=700&q=80",
+        description_bn: "ঘরের বাতাস সতেজ ও সুবাসিত রাখতে আল্ট্রাসনিক হিউমিডিফায়ার। সাথে রয়েছে ৭ রঙের আরামদায়ক এলইডি নাইট লাইট যা গভীর ও প্রশান্তিময় ঘুমের সহায়ক।",
+        description_en: "Ultrasonic cool mist humidifier with 7 ambient calming LED night lights.",
+        features_bn: [
+          "✓ অটোমেটিক ওয়াটার-লেস শাট অফ সেফটি",
+          "✓ ৭ রঙের মনোরম অ্যাম্বিয়েন্ট লাইটিং",
+          "✓ অতি নিরব আল্ট্রাসনিক টেকনোলজি",
+          "✓ এসেনশিয়াল অয়েল ডিফিউজার সাপোর্ট"
+        ]
+      }
+    ];
+
+    // ক্যাটাগরি তালিকা
+    const categoryData = [
+      { id: 'all', name_bn: 'সকল পণ্য', name_en: 'All Products', icon: 'layers' },
+      { id: 'electronics', name_bn: 'ইলেকট্রনিক্স', name_en: 'Electronics', icon: 'tv' },
+      { id: 'gadgets', name_bn: 'গ্যাজেটস', name_en: 'Gadgets', icon: 'smartphone' },
+      { id: 'fashion', name_bn: 'ফ্যাশন ও লাইফস্টাইল', name_en: 'Fashion', icon: 'shirt' },
+      { id: 'home', name_bn: 'হোম ও কিচেন', name_en: 'Home & Kitchen', icon: 'home' }
+    ];
+
+    // মুদ্রা ফরম্যাটিং হেল্পার
+    function formatBDT(num) {
+      if (currentLang === 'bn') {
+        const bnDigits = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
+        return '৳' + num.toLocaleString('en-US').replace(/[0-9]/g, d => bnDigits[d]);
+      }
+      return '৳' + num.toLocaleString('en-US');
+    }
+
+    function toBn(num) {
+      if (currentLang === 'bn') {
+        const bnDigits = {'0':'০','1':'১','2':'২','3':'৩','4':'৪','5':'৫','6':'৬','7':'৭','8':'৮','9':'৯'};
+        return num.toString().replace(/[0-9]/g, d => bnDigits[d]);
+      }
+      return num.toString();
+    }
+
+    // টোস্ট নোটিফিকেশন প্রদর্শন
+    function showToast(msg, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 text-xs sm:text-sm font-semibold pointer-events-auto transform transition-all duration-300 translate-y-3 opacity-0`;
+      toast.innerHTML = `
+        <i data-lucide="${type === 'success' ? 'check-circle-2' : 'info'}" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+        <span>${msg}</span>
+      `;
+      container.appendChild(toast);
+      lucide.createIcons();
+
+      setTimeout(() => toast.classList.remove('translate-y-3', 'opacity-0'), 10);
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 2800);
+    }
+
+    // ভাষা পরিবর্তন (বাংলা / English)
+    function toggleLanguage() {
+      currentLang = currentLang === 'bn' ? 'en' : 'bn';
+      document.documentElement.lang = currentLang;
+      document.getElementById('lang-label').innerText = currentLang === 'bn' ? 'English' : 'বাংলা';
+      
+      const searchPlaceholder = currentLang === 'bn' ? 'পণ্য, গ্যাজেট বা মডেল লিখে সার্চ করুন...' : 'Search products, gadgets, models...';
+      document.getElementById('search-input').placeholder = searchPlaceholder;
+      document.getElementById('mobile-search-input').placeholder = searchPlaceholder;
+
+      renderCategoryPills();
+      renderProductsGrid();
+      updatePriceDisplay();
+      if (selectedProduct) {
+        populateModalData(selectedProduct);
+      }
+    }
+
+    // ক্যাটাগরি পিলস রেন্ডার
+    function renderCategoryPills() {
+      const container = document.getElementById('category-pills');
+      container.innerHTML = categoryData.map(cat => {
+        const isActive = currentCategory === cat.id;
+        const activeClass = isActive 
+          ? 'bg-brand-600 text-white shadow-md shadow-brand-600/30 border-brand-600' 
+          : 'bg-white text-slate-700 hover:bg-slate-100 border-slate-200';
+        const label = currentLang === 'bn' ? cat.name_bn : cat.name_en;
+
+        return `
+          <button 
+            type="button"
+            onclick="selectCategory('${cat.id}')"
+            class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold border flex items-center gap-2 whitespace-nowrap transition-all ${activeClass}">
+            <i data-lucide="${cat.icon}" class="w-4 h-4"></i>
+            <span>${label}</span>
+          </button>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function selectCategory(catId) {
+      currentCategory = catId;
+      renderCategoryPills();
+      renderProductsGrid();
+    }
+
+    // ফিল্টার ও সর্ট ফাংশন
+    function getFilteredList() {
+      return productCatalog.filter(p => {
+        const matchesCat = currentCategory === 'all' || p.category === currentCategory;
+        const q = searchQuery.toLowerCase();
+        const matchesSearch = p.title_bn.toLowerCase().includes(q) || p.title_en.toLowerCase().includes(q);
+        const matchesPrice = p.price <= maxPrice;
+        return matchesCat && matchesSearch && matchesPrice;
+      }).sort((a, b) => {
+        if (sortBy === 'low-to-high') return a.price - b.price;
+        if (sortBy === 'high-to-low') return b.price - a.price;
+        if (sortBy === 'rating') return b.rating - a.rating;
+        return a.id - b.id;
+      });
+    }
+
+    // প্রোডাক্ট গ্রিড রেন্ডার (প্রতিটি কার্ডে ক্লিক করলে সরাসরি মডাল খুলবে)
+    function renderProductsGrid() {
+      const grid = document.getElementById('product-grid');
+      const emptyState = document.getElementById('empty-state');
+      const filtered = getFilteredList();
+
+      document.getElementById('product-count-badge').innerText = 
+        currentLang === 'bn' ? `${toBn(filtered.length)} টি পণ্য` : `${filtered.length} Items`;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      grid.innerHTML = filtered.map(item => {
+        const title = currentLang === 'bn' ? item.title_bn : item.title_en;
+
+        return `
+          <div 
+            onclick="openProductModal(${item.id})" 
+            class="group bg-white rounded-3xl border border-slate-200/90 overflow-hidden hover:shadow-2xl hover:border-brand-400 transition-all duration-300 flex flex-col justify-between cursor-pointer active:scale-[0.98]">
+            
+            <!-- ছবি ও অফার ব্যাজ -->
+            <div class="relative overflow-hidden aspect-[4/3] bg-slate-100">
+              <img 
+                src="${item.image}" 
+                alt="${title}" 
+                loading="lazy" 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              >
+              <span class="absolute top-2.5 left-2.5 bg-rose-600 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow-md">
+                ${item.discount}
+              </span>
+
+              <!-- ওভারলে ইঙ্গিত -->
+              <div class="absolute inset-x-0 bottom-2 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span class="bg-black/80 backdrop-blur-xs text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1.5 shadow-lg">
+                  <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+                  <span>বিবরণ ও অর্ডার</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- কনটেন্ট এরিয়া -->
+            <div class="p-3.5 sm:p-4 flex flex-col flex-1 justify-between">
+              <div>
+                <!-- রেটিং -->
+                <div class="flex items-center gap-1 text-amber-500 text-xs mb-1.5">
+                  <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                  <span class="font-bold text-slate-700 text-xs">${item.rating}</span>
+                  <span class="text-slate-400 text-[11px]">(${toBn(item.reviewsCount)})</span>
+                </div>
+
+                <!-- টাইটেল -->
+                <h3 class="font-bold text-xs sm:text-sm text-slate-800 line-clamp-2 group-hover:text-brand-700 transition-colors mb-2 leading-snug">
+                  ${title}
+                </h3>
+              </div>
+
+              <!-- দাম ও সরাসরি অর্ডার বাটন -->
+              <div class="pt-2 border-t border-slate-100">
+                <div class="flex items-baseline gap-1.5 mb-2.5">
+                  <span class="text-base sm:text-lg font-black text-brand-700">${formatBDT(item.price)}</span>
+                  <span class="text-xs text-slate-400 line-through">${formatBDT(item.oldPrice)}</span>
+                </div>
+
+                <button 
+                  type="button"
+                  class="w-full bg-brand-50 hover:bg-brand-600 text-brand-700 hover:text-white border border-brand-200 hover:border-transparent py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs">
+                  <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                  <span>বিবরণ ও সরাসরি অর্ডার</span>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    // ফিল্টার ইভেন্টস
+    function handleSearch(val) {
+      searchQuery = val.trim();
+      document.getElementById('search-input').value = val;
+      document.getElementById('mobile-search-input').value = val;
+      renderProductsGrid();
+    }
+
+    function handlePriceFilter(val) {
+      maxPrice = Number(val);
+      updatePriceDisplay();
+      renderProductsGrid();
+    }
+
+    function updatePriceDisplay() {
+      document.getElementById('price-val-label').innerText = formatBDT(maxPrice);
+    }
+
+    function handleSort(val) {
+      sortBy = val;
+      renderProductsGrid();
+    }
+
+    function resetFilters() {
+      searchQuery = '';
+      currentCategory = 'all';
+      maxPrice = 15000;
+      sortBy = 'featured';
+      document.getElementById('search-input').value = '';
+      document.getElementById('mobile-search-input').value = '';
+      document.getElementById('price-range').value = '15000';
+      document.getElementById('sort-select').value = 'featured';
+      updatePriceDisplay();
+      renderCategoryPills();
+      renderProductsGrid();
+    }
+
+    // =========================================================================
+    // প্রোডাক্ট ক্লিক: মডাল ওপেনিং, বিবরণ প্রদর্শন ও এক-পেজ চেকআউট
+    // =========================================================================
+    function openProductModal(productId) {
+      selectedProduct = productCatalog.find(p => p.id === productId);
+      if (!selectedProduct) return;
+
+      orderQuantity = 1;
+      populateModalData(selectedProduct);
+
+      // ফর্ম রিসেট
+      document.getElementById('direct-order-form').reset();
+      document.getElementById('modal-content-form').classList.remove('hidden');
+      document.getElementById('modal-content-success').classList.add('hidden');
+
+      calculateOrderTotal();
+
+      // স্মুথ ওপেন
+      const modal = document.getElementById('product-order-modal');
+      const card = document.getElementById('modal-card');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        card.classList.remove('scale-95');
+      }, 10);
+
+      lucide.createIcons();
+    }
+
+    function closeProductModal() {
+      const modal = document.getElementById('product-order-modal');
+      const card = document.getElementById('modal-card');
+      modal.classList.add('opacity-0');
+      card.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 200);
+    }
+
+    // মডালে পণ্যের তথ্য প্রদর্শন
+    function populateModalData(prod) {
+      const title = currentLang === 'bn' ? prod.title_bn : prod.title_en;
+      const desc = currentLang === 'bn' ? prod.description_bn : prod.description_en;
+      const catObj = categoryData.find(c => c.id === prod.category);
+      const catName = currentLang === 'bn' ? catObj.name_bn : catObj.name_en;
+
+      document.getElementById('m-img').src = prod.image;
+      document.getElementById('m-discount-tag').innerText = prod.discount;
+      document.getElementById('m-category-badge').innerText = catName;
+      document.getElementById('m-title').innerText = title;
+      document.getElementById('m-description').innerText = desc;
+      document.getElementById('m-price').innerText = formatBDT(prod.price);
+      document.getElementById('m-old-price').innerText = formatBDT(prod.oldPrice);
+      document.getElementById('m-rating-text').innerText = `${prod.rating} (${toBn(prod.reviewsCount)} রিভিউ)`;
+      document.getElementById('m-qty-val').innerText = toBn(orderQuantity);
+
+      // স্টারস
+      let starStr = '';
+      for (let i = 0; i < 5; i++) {
+        starStr += `<i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>`;
+      }
+      document.getElementById('m-stars').innerHTML = starStr;
+
+      // বুলেট ফিচারস
+      const featureListEl = document.getElementById('m-feature-bullets');
+      featureListEl.innerHTML = (prod.features_bn || []).map(f => `<li>${f}</li>`).join('');
+
+      lucide.createIcons();
+    }
+
+    // পরিমাণ বাড়ানো / কমানো
+    function changeQty(delta) {
+      const newQty = orderQuantity + delta;
+      if (newQty >= 1 && newQty <= 10) {
+        orderQuantity = newQty;
+        document.getElementById('m-qty-val').innerText = toBn(orderQuantity);
+        calculateOrderTotal();
+      }
+    }
+
+    // লাইভ মোট টাকা হিসাব
+    function calculateOrderTotal() {
+      if (!selectedProduct) return;
+      const deliveryFee = parseInt(document.querySelector('input[name="deliveryZone"]:checked').value);
+      const itemsTotal = selectedProduct.price * orderQuantity;
+      const grandTotal = itemsTotal + deliveryFee;
+
+      document.getElementById('sum-unit-price').innerText = formatBDT(selectedProduct.price);
+      document.getElementById('sum-qty').innerText = `${toBn(orderQuantity)} টি`;
+      document.getElementById('sum-delivery').innerText = formatBDT(deliveryFee);
+      document.getElementById('sum-total-amount').innerText = formatBDT(grandTotal);
+    }
+
+    // অর্ডার নিশ্চিতকরণ ও ইনভয়েস জেনারেশন
+    function processDirectOrder(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('c-name').value;
+      const phone = document.getElementById('c-phone').value;
+      const address = document.getElementById('c-address').value;
+      const notes = document.getElementById('c-notes').value;
+      const deliveryFee = parseInt(document.querySelector('input[name="deliveryZone"]:checked').value);
+      const paymentMethod = document.querySelector('input[name="cPayment"]:checked').value;
+      const grandTotal = (selectedProduct.price * orderQuantity) + deliveryFee;
+
+      const randomOrderId = 'AD-' + Math.floor(100000 + Math.random() * 900000);
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      // ইনভয়েস ডেটা পপুলেট
+      document.getElementById('inv-order-id').innerText = '#' + randomOrderId;
+      document.getElementById('inv-date').innerText = dateStr;
+      document.getElementById('inv-prod-title').innerText = currentLang === 'bn' ? selectedProduct.title_bn : selectedProduct.title_en;
+      document.getElementById('inv-prod-qty').innerText = `${toBn(orderQuantity)} টি (${formatBDT(selectedProduct.price)} × ${toBn(orderQuantity)})`;
+      document.getElementById('inv-cust-name').innerText = name;
+      document.getElementById('inv-cust-phone').innerText = phone;
+      document.getElementById('inv-cust-address').innerText = address + (notes ? ` (নোট: ${notes})` : '');
+      document.getElementById('inv-cust-payment').innerText = paymentMethod;
+      document.getElementById('inv-total-price').innerText = formatBDT(grandTotal);
+
+      // স্ক্রিন পরিবর্তন: ফর্ম লুকিয়ে মেমো দেখানো
+      document.getElementById('modal-content-form').classList.add('hidden');
+      document.getElementById('modal-content-success').classList.remove('hidden');
+
+      showToast("আপনার অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে!");
+      lucide.createIcons();
+    }
+
+    // ব্যাকড্রপে ক্লিক করলে মডাল বন্ধ
+    document.getElementById('product-order-modal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeProductModal();
+      }
+    });
+
+    // হিরো স্লাইডার নিয়ন্ত্রণ
+    function showSlide(index) {
+      const slides = document.querySelectorAll('.hero-slide');
+      slides.forEach((slide, i) => {
+        if (i === index) {
+          slide.classList.remove('opacity-0');
+          slide.classList.add('opacity-100');
+        } else {
+          slide.classList.remove('opacity-100');
+          slide.classList.add('opacity-0');
+        }
+      });
+      currentSlide = index;
+    }
+
+    function changeSlide(step) {
+      const slides = document.querySelectorAll('.hero-slide');
+      let next = currentSlide + step;
+      if (next >= slides.length) next = 0;
+      if (next < 0) next = slides.length - 1;
+      showSlide(next);
+      resetSliderTimer();
+    }
+
+    function resetSliderTimer() {
+      if (sliderTimer) clearInterval(sliderTimer);
+      sliderTimer = setInterval(() => changeSlide(1), 5500);
+    }
+
+    // উইন্ডো অন-লোড
+    window.onload = function() {
+      renderCategoryPills();
+      renderProductsGrid();
+      resetSliderTimer();
+      lucide.createIcons();
+    };
+  </script>
+</body>
+</html>
